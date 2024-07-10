@@ -1,9 +1,10 @@
 package main
 
 import (
-	// "flag"
+	"flag"
 
-	// "github.com/Salonisaroha/api"
+	//"github.com/Salonisaroha/api"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -22,11 +23,12 @@ func main() {
 	// app.Get("/user/:id", api.HandleGetUser)
 
 	// app.Listen(*listenAddar)
-
+	listenAddr := flag.String("listenAddr", ":5000", "The listen address of the API server")
+	flag.Parse()
 	app := fiber.New()
 
 	appv1 := app.Group("/api/v1")
 	app.Get("/foo", handleFoo)
 	appv1.Get("/user", handleUser)
-	app.Listen(":5000")
+	app.Listen(*listenAddr)
 }
