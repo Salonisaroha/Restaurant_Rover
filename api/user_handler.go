@@ -1,9 +1,12 @@
 package api
 
 import (
+	"errors"
+
 	"github.com/Salonisaroha/db"
 	"github.com/Salonisaroha/types"
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type UserHandler struct {
@@ -15,7 +18,16 @@ func NewUserHandler(userStore db.UserStore) *UserHandler {
 		userStore: userStore,
 	}
 }
-
+func(h *UserHandler) HandlePutUser(c *fiber.Ctx)error{
+ return nil
+}
+func(h *UserHandler)HandleDeleteUser(c *fiber.Ctx) error{
+ userID := c.Params("id")
+ if err := h.userStore.DeleteUser(c.UserContext(), userID); err != nil{
+	return err
+ }
+ return c.JSON(map[string]string{"deleted":userID})
+}
 func (h *UserHandler) HandlePostUser(c *fiber.Ctx) error {
 	var params types.CreateUserParams
 	if err := c.BodyParser(&params); err != nil {
@@ -36,10 +48,16 @@ func (h *UserHandler) HandlePostUser(c *fiber.Ctx) error {
 }
 
 func (h *UserHandler) HandleGetUser(c *fiber.Ctx) error {
-	id := c.Params("id")
+	var(
+		id = c.Params("id")
+	)
+	
 	user, err := h.userStore.GetUserByID(c.Context(), id)
 	if err != nil {
-		return fiber.NewError(fiber.StatusNotFound, err.Error())
+	        if errors.Is(err, mongo.ErrNoDocuments){
+				return c.JSON(map[string]string{"error" : "not found"})
+			}
+			return err
 	}
 	return c.JSON(user)
 }

@@ -36,7 +36,7 @@ func main() {
 
 	app := fiber.New(config)
 	appv1 := app.Group("/api/v1")
-
+    appv1.Delete("/user/:id", userHandler.HandleDeleteUser)
 	appv1.Post("/user", userHandler.HandlePostUser)
 	appv1.Get("/users", userHandler.HandleGetUsers)   // Fetch all users
 	appv1.Get("/user/:id", userHandler.HandleGetUser) // Fetch single user by ID
