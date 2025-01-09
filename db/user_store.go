@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Salonisaroha/types"
 	"go.mongodb.org/mongo-driver/bson"
@@ -10,13 +11,16 @@ import (
 )
 
 const userColl = "users"
-
+type Dropper interface{
+	Drop(context.Context) error
+}
 type UserStore interface {
 	GetUserByID(context.Context, string) (*types.User, error)
 	GetUsers(context.Context) ([]*types.User, error)
 	InsertUser(context.Context, *types.User) (*types.User, error)
 	DeleteUser(context.Context, string) error
 	UpdateUser(ctx context.Context, filter bson.M, params types.UpdateUserParams) error
+	Drop(context.Context) error
 }
 
 type MongoUserStore struct {
@@ -29,11 +33,16 @@ type MongoUserStore struct {
 // 	panic("unimplemented")
 // }
 
-func NewMongoUserStore(client *mongo.Client) *MongoUserStore {
+func NewMongoUserStore(client *mongo.Client, dbname string) *MongoUserStore {
 	return &MongoUserStore{
 		client: client,
-		coll:   client.Database(DBNAME).Collection(userColl),
+		coll:   client.Database(dbname).Collection(userColl),
 	}
+}
+
+func(s *MongoUserStore) Drop(ctx context.Context) error{
+	fmt.Println("----dropping user collection")
+	return s.coll.Drop(ctx)
 }
 func(s *MongoUserStore) UpdateUser(ctx context.Context, filter bson.M, params types.UpdateUserParams)error{
 	
