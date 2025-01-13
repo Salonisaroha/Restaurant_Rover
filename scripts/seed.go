@@ -7,6 +7,7 @@ import (
 
 	"github.com/Salonisaroha/db"
 	"github.com/Salonisaroha/types"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -22,20 +23,36 @@ func main(){
 		Name: "Ontario",
 		Location : "Noida",
 	}
-	room := types.Room{
-		Type:types.SingleRoomType,
-		BasePrice: 99.9,
+	rooms := [] types.Room{
+		{
+			Type: types.SingleRoomType,
+			BasePrice: 99.9,
+		},
+		{
+            Type:types.DeluxRoomType,
+			BasePrice: 199.9,
+		},
+		{
+            Type:types.SeaSideRoomType,
+			BasePrice: 122.9,
+		},
 	}
-	_ = room
+	
+	
 	InsertedHotel, err := hotelStore.InsertHotel(ctx, &hotel)
 	if err!= nil{
 		log.Fatal(err)
 	}
-	room.HotelID = InsertedHotel.ID
-	insertedRoom, err := roomStore.InsertRoom(room)
-	if err != nil{
-		log.Fatal(err)
+	for _, room := range rooms{
+		room.ID = primitive.NewObjectID()
+		room.HotelID = InsertedHotel.ID
+		insertedRoom, err := roomStore.InsertRoom(ctx, &room)
+		if err != nil{
+			log.Fatal(err)
+		}
+		fmt.Println(insertedRoom)
 	}
+	
 	fmt.Println(InsertedHotel)
-	fmt.Println(insertedRoom)
+	
 }
